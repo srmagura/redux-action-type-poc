@@ -20,7 +20,6 @@ const appActions = {
   customerActions,
 };
 
-// THIS IS THE IMPORTANT PART
 type ActionType<T extends any> = T extends ActionCreator<any>
   ? ReturnType<T>
   : { [K in keyof T]: ActionType<T[K]> }[keyof T];
