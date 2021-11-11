@@ -1,4 +1,10 @@
-import { ActionCreator, createAction, Dispatch } from "@reduxjs/toolkit";
+import {
+  ActionCreator,
+  configureStore,
+  createAction,
+  Dispatch,
+  Reducer,
+} from "@reduxjs/toolkit";
 
 const userActions = {
   add: createAction<number, "user/add">("user/add"),
@@ -14,12 +20,12 @@ const appActions = {
   customerActions,
 };
 
-type ValuesOf<T> = T[keyof T];
-
+// THIS IS THE IMPORTANT PART
 type ActionType<T extends any> = T extends ActionCreator<any>
   ? ReturnType<T>
-  : ValuesOf<{ [K in keyof T]: ActionType<T[K]> }>;
+  : { [K in keyof T]: ActionType<T[K]> }[keyof T];
 
+// Example usage of ActionType
 type UserAction = ActionType<typeof userActions>;
 // type UserAction = {
 //     payload: number;
@@ -62,3 +68,21 @@ dispatch("user/add");
 dispatch(userActions.add); // forgot to call the action creator
 dispatch({ type: "user/add", payload: "wrong payload type" });
 dispatch({ type: "nonExistentActionType" });
+
+//
+// Bonus: integration with configureStore
+//
+type AppState = { foobar: number };
+
+const appReducer: Reducer<AppState, AppAction> = (
+  state = { foobar: 0 },
+  action: AppAction
+) => state;
+
+const store = configureStore<AppState, AppAction>({ reducer: appReducer });
+
+store.dispatch(userActions.add(0)); // OK
+store.dispatch("user/add"); // ERROR
+
+store.dispatch(() => Promise.resolve(userActions.add(0))); // OK
+store.dispatch(() => Promise.resolve({ type: "nonExistentActionType" })); // OK when it ideally wouldn't be
