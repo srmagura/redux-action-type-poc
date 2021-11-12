@@ -83,5 +83,9 @@ const store = configureStore<AppState, AppAction>({ reducer: appReducer });
 store.dispatch(userActions.add(0)); // OK
 store.dispatch("user/add"); // ERROR
 
-store.dispatch(() => Promise.resolve(userActions.add(0))); // OK
-store.dispatch(() => Promise.resolve({ type: "nonExistentActionType" })); // OK when it ideally wouldn't be
+store.dispatch(async (dispatch) => {
+  dispatch(userActions.add(0)); // OK
+});
+store.dispatch(async (dispatch) => {
+  dispatch({ type: "nonExistentActionType" }); // OK when it ideally wouldn't be
+});
